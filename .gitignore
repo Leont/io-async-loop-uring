@@ -1,0 +1,4 @@
+/.build/
+/IO-Async-Loop-Uring-*/
+/IO-Async-Loop-Uring-*.tar.gz
+!/.gitignore
