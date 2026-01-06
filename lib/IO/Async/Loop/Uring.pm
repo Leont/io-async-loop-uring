@@ -17,7 +17,9 @@ use Signal::Info 'CLD_EXITED';
 use Time::Spec;
 
 use constant API_VERSION => '0.76';
-use constant _CAN_ON_HANGUP => !!0;
+use constant _CAN_ON_HANGUP => !!1;
+use constant _CAN_SUBSECOND_ACCURATELY => !!0; # supported but buggy in IO::Async's tests
+use constant _CAN_WATCH_ALL_PIDS => !!1;
 
 sub new {
 	my ($class, %params) = @_;
