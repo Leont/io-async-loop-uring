@@ -8,7 +8,7 @@ use parent 'IO::Async::Loop';
 use Carp 'croak';
 use Scalar::Util 'weaken';
 use Errno 'ETIME';
-use IO::Uring 0.008 qw/IORING_POLL_UPDATE_EVENTS P_PID P_ALL WEXITED IOSQE_ASYNC
+use IO::Uring 0.009 qw/IORING_POLL_UPDATE_EVENTS P_PID P_ALL WEXITED IOSQE_ASYNC
                        IORING_TIMEOUT_ETIME_SUCCESS IORING_TIMEOUT_ABS IORING_TIMEOUT_BOOTTIME IORING_TIMEOUT_REALTIME/;
 use IO::Poll qw/POLLIN POLLOUT POLLHUP POLLERR POLLPRI/;
 use Linux::FD 0.015 qw/signalfd/;
@@ -31,18 +31,22 @@ sub new {
 
 sub loop_once {
 	my ($self, $timeout, %params) = @_;
-	my $id;
+	my $ret;
 	$self->pre_wait;
 	if (defined $timeout and $timeout != 0) {
 		$self->_adjust_timeout(\$timeout);
 		my $timespec = Time::Spec->new($timeout);
-		$self->{ring}->run_once(1, $timespec);
+		$ret = $self->{ring}->run_once(1, $timespec);
 	} else {
-		$self->{ring}->run_once(not defined $timeout);
+		$ret = $self->{ring}->run_once(not defined $timeout);
 	}
 	$self->post_wait;
+
+	return undef if !defined $ret and $! != ETIME;
+
 	$self->_manage_queues;
-	return;
+
+	return 1;
 }
 
 sub is_running {
