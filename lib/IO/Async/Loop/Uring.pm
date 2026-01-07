@@ -78,11 +78,12 @@ sub watch_io {
 		$self->{ring}->poll_update($id, undef, $mask | POLLHUP | POLLERR, IORING_POLL_UPDATE_EVENTS, 0);
 		return $id;
 	} else {
+		my $watch = $this->{iowatches}{$fileno};
+
 		my $id = $self->{ring}->poll_multishot($handle, $mask | POLLHUP | POLLERR, 0, sub {
 			my ($res, $flags) = @_;
 			return if $res < 0;
 
-			my $watch = $this->{iowatches}{$fileno};
 
 			if ($res & (POLLIN|POLLHUP|POLLERR)) {
 				$watch->[1]->($res) if defined $watch->[1];

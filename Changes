@@ -1,6 +1,7 @@
 Revision history for IO-Async-Loop-Uring
 
 {{$NEXT}}
+          - Correctly scope watch reference to avoid descriptor reuse confusion
           - Correctly advertize abilities
           - Make run_once return undef on error
 
