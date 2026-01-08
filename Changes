@@ -4,6 +4,7 @@ Revision history for IO-Async-Loop-Uring
           - Correctly scope watch reference to avoid descriptor reuse confusion
           - Correctly advertize abilities
           - Make run_once return undef on error
+          - Delete handler upon cancelation
 
 0.001     2026-01-06 23:56:09+01:00 Europe/Brussels
           - Initial release

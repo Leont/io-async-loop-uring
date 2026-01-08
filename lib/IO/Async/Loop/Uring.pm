@@ -82,17 +82,21 @@ sub watch_io {
 
 		my $id = $self->{ring}->poll_multishot($handle, $mask | POLLHUP | POLLERR, 0, sub {
 			my ($res, $flags) = @_;
-			return if $res < 0;
 
-
-			if ($res & (POLLIN|POLLHUP|POLLERR)) {
-				$watch->[1]->($res) if defined $watch->[1];
-			}
-			if ($res & (POLLOUT|POLLPRI|POLLHUP|POLLERR)) {
-				$watch->[2]->() if defined $watch->[2];
-			}
-			if ($res & (POLLHUP|POLLERR)) {
-				$watch->[3]->() if defined $watch->[3];
+			if ($res > 0) {
+				if ($res & (POLLIN|POLLHUP|POLLERR)) {
+					$watch->[1]->() if defined $watch->[1];
+				}
+				if ($res & (POLLOUT|POLLPRI|POLLHUP|POLLERR)) {
+					$watch->[2]->() if defined $watch->[2];
+				}
+				if ($res & (POLLHUP|POLLERR)) {
+					$watch->[3]->() if defined $watch->[3];
+				}
+			} elsif ($flags == 0 && $this->{iowatches}{$fileno} && $this->{iowatches}{$fileno} == $watch) {
+				delete $this->{pollmask}{$fileno};
+				delete $this->{poll_id}{$fileno};
+				delete $this->{iowatches}{$fileno};
 			}
 		});
 		$self->{poll_id}{$fileno} = $id;
@@ -116,13 +120,13 @@ sub unwatch_io {
 	$mask &= ~POLLHUP if $params{on_hangup};
 
 	return if $mask == $curmask;
-	$self->{pollmask}{$fileno} = $mask;
 
 	if ($mask == 0) {
 		$self->{ring}->poll_remove($id, 0);
 		delete $self->{pollmask}{$fileno};
 		delete $self->{poll_id}{$fileno};
 	} else {
+		$self->{pollmask}{$fileno} = $mask;
 		$self->{ring}->poll_update($id, undef, $mask | POLLHUP | POLLERR, 0, IORING_POLL_UPDATE_EVENTS);
 	}
 }
