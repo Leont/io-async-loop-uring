@@ -21,6 +21,9 @@ use constant _CAN_ON_HANGUP => !!1;
 use constant _CAN_SUBSECOND_ACCURATELY => !!0; # supported but buggy in IO::Async's tests
 use constant _CAN_WATCH_ALL_PIDS => !!1;
 
+use constant _CAN_WATCHDOG => !!1;
+use constant WATCHDOG_ENABLE => IO::Async::Loop->WATCHDOG_ENABLE;
+
 sub new {
 	my ($class, %params) = @_;
 
@@ -44,7 +47,17 @@ sub loop_once {
 
 	return undef if !defined $ret and $! != ETIME;
 
-	$self->_manage_queues;
+	if( WATCHDOG_ENABLE and !$self->{alarmed} ) {
+		alarm( IO::Async::Loop->WATCHDOG_INTERVAL );
+		$self->{alarmed}++;
+
+		$self->_manage_queues;
+
+		alarm(0);
+		undef $self->{alarmed};
+	} else {
+		$self->_manage_queues;
+	}
 
 	return 1;
 }
@@ -71,6 +84,8 @@ sub watch_io {
 	return if $mask == $curmask;
 	$self->{pollmask}{$fileno} = $mask;
 
+	my $alarmed = \$self->{alarmed};
+
 	my $this = $self;
 	weaken $this;
 
@@ -84,6 +99,11 @@ sub watch_io {
 			my ($res, $flags) = @_;
 
 			if ($res > 0) {
+				if( WATCHDOG_ENABLE and !$$alarmed ) {
+					alarm( IO::Async::Loop->WATCHDOG_INTERVAL );
+					$$alarmed = 1;
+				}
+
 				if ($res & (POLLIN|POLLHUP|POLLERR)) {
 					$watch->[1]->() if defined $watch->[1];
 				}
