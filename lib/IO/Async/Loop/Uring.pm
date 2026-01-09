@@ -280,6 +280,6 @@ sub unwatch_process {
 
 =head1 DESCRIPTION
 
-This subclass of L<IO::Async::Loop> uses L<IO::Uring> to perform its work.
+This subclass of L<IO::Async::Loop> uses L<IO::Uring> to perform its work. Because C<io_uring> is a quickly developing kernel subsystem, it requires a Linux 6.7 kernel or newer to function.
 
 =cut
