@@ -1,6 +1,7 @@
 Revision history for IO-Async-Loop-Uring
 
 {{$NEXT}}
+          - Fix copy-paste error in tests
 
 0.002     2026-01-09 02:00:13+01:00 Europe/Brussels
           - Correctly scope watch reference to avoid descriptor reuse confusion
