@@ -90,12 +90,12 @@ sub watch_io {
 	weaken $this;
 
 	if (my $id = $self->{poll_id}{$fileno}) {
-		$self->{ring}->poll_update($id, undef, $mask | POLLHUP | POLLERR, IORING_POLL_UPDATE_EVENTS, 0);
+		$self->{ring}->poll_update($id, undef, $mask, IORING_POLL_UPDATE_EVENTS, 0);
 		return $id;
 	} else {
 		my $watch = $this->{iowatches}{$fileno};
 
-		my $id = $self->{ring}->poll_multishot($handle, $mask | POLLHUP | POLLERR, 0, sub {
+		my $id = $self->{ring}->poll_multishot($handle, $mask, 0, sub {
 			my ($res, $flags) = @_;
 
 			if ($res > 0) {
@@ -147,7 +147,7 @@ sub unwatch_io {
 		delete $self->{poll_id}{$fileno};
 	} else {
 		$self->{pollmask}{$fileno} = $mask;
-		$self->{ring}->poll_update($id, undef, $mask | POLLHUP | POLLERR, 0, IORING_POLL_UPDATE_EVENTS);
+		$self->{ring}->poll_update($id, undef, $mask, 0, IORING_POLL_UPDATE_EVENTS);
 	}
 }
 
