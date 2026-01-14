@@ -47,13 +47,13 @@ sub loop_once {
 
 	return undef if !defined $ret and $! != ETIME;
 
-	if( WATCHDOG_ENABLE and !$self->{alarmed} ) {
-		alarm( IO::Async::Loop->WATCHDOG_INTERVAL );
+	if (WATCHDOG_ENABLE and !$self->{alarmed}) {
+		alarm IO::Async::Loop->WATCHDOG_INTERVAL;
 		$self->{alarmed}++;
 
 		$self->_manage_queues;
 
-		alarm(0);
+		alarm 0;
 		undef $self->{alarmed};
 	} else {
 		$self->_manage_queues;
@@ -99,8 +99,8 @@ sub watch_io {
 			my ($res, $flags) = @_;
 
 			if ($res > 0) {
-				if( WATCHDOG_ENABLE and !$$alarmed ) {
-					alarm( IO::Async::Loop->WATCHDOG_INTERVAL );
+				if (WATCHDOG_ENABLE and !$$alarmed) {
+					alarm IO::Async::Loop->WATCHDOG_INTERVAL;
 					$$alarmed = 1;
 				}
 
@@ -194,7 +194,7 @@ sub watch_time {
 	my $code = $params{code} or croak "Expected 'code' as CODE ref";
 
 	my $fh;
-	if( defined $params{after} ) {
+	if (defined $params{after}) {
 		my $after = $params{after} >= 0 ? $params{after} : 0;
 		my $flags = IORING_TIMEOUT_ETIME_SUCCESS;
 		$flags |= $flag_for_clock{$params{clock}} if defined $params{clock};
@@ -269,12 +269,12 @@ sub unwatch_process {
 
  my $loop = IO::Async::Loop::Uring->new();
 
- $loop->add( ... );
+ $loop->add(...);
 
- $loop->add( IO::Async::Signal->new(
+ $loop->add(IO::Async::Signal->new(
        name => 'HUP',
        on_receipt => sub { ... },
- ) );
+ ));
 
  $loop->loop_forever();
 
