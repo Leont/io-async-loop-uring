@@ -59,7 +59,7 @@ sub loop_once {
 		$self->_manage_queues;
 	}
 
-	return 1;
+	return defined $ret;
 }
 
 sub is_running {
