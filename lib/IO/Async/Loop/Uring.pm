@@ -28,7 +28,7 @@ sub new {
 	my ($class, %params) = @_;
 
 	my $self = $class->__new(%params);
-	$self->{ring} = IO::Uring->new(128);
+	$self->{ring} = $params{ring} // IO::Uring->new(128);
 	return $self;
 }
 
@@ -282,4 +282,6 @@ sub unwatch_process {
 
 This subclass of L<IO::Async::Loop> uses L<IO::Uring> to perform its work. Because C<io_uring> is a quickly developing kernel subsystem, it requires a Linux 6.7 kernel or newer to function.
 
-=cut
+=method new(%options)
+
+This constructs a new C<IO::Async::Loop::Uring> object. It optionally takes a signle named argument, C<ring>, which would be the L<IO::Uring> ring used for the loop.
